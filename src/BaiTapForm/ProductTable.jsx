@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BTFormActions } from "../store/BTForm/slice";
 import { useRenderContext } from "./RenderContext";
 
 const ProductTable = () => {
     const dispatch = useDispatch();
-    const [valueSearch, setValueSearch] = useState();
+    const {valueSearch, setValueSearch} = useRenderContext();
     const { listSV } = useSelector((state) => state.BTForm);
+    const {setFormError} = useRenderContext();
     const svSearch = listSV.filter((v) =>
         v.name.toLowerCase().includes(valueSearch?.toLowerCase())
     );
@@ -19,7 +20,7 @@ const ProductTable = () => {
             <input
                 value={valueSearch || ""}
                 type="text"
-                className="form-control mt-3"
+                className="form-control mt-3 searchInput"
                 placeholder="Tìm kiếm theo tên"
                 onChange={(ev) => {
                     setValueSearch(ev.target.value);
@@ -67,6 +68,7 @@ const ProductTable = () => {
                                                     BTFormActions.editSV(v)
                                                 );
                                                 setRender("");
+                                                setFormError("")
                                             }}
                                         >
                                             Edit

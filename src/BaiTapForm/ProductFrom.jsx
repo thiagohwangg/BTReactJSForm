@@ -1,27 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BTFormActions } from "../store/BTForm/slice";
-import validator from "validator";
+// import validator from "validator";
 import { useRenderContext } from "./RenderContext";
+import { toast } from "react-toastify";
 const ProductFrom = () => {
     const dispatch = useDispatch();
     const [formValue, setFormValue] = useState();
     const { svEdit, listSV } = useSelector((state) => state.BTForm);
-    const [formError, setFormError] = useState();
-    // eslint-disable-next-line no-unused-vars
-    const { render, setRender } = useRenderContext();
+    const {formError, setFormError} = useRenderContext();
+    const { setValueSearch } = useRenderContext();
+    const { setRender } = useRenderContext();
     const validation = (v) => {
         const { validity, title, name, value } = v;
         const { patternMismatch } = validity;
         let mess = "";
-        if (value.replace(/\s/g, '').length === 0) {
+        if (value.replace(/\s/g, "").length === 0) {
             mess = `Vui lòng nhập ${title}`;
         } else if (patternMismatch && name === "maSV") {
             mess = "Mã sinh viên chỉ được bao gồm số và không có khoảng cách";
-        } else if (name === "email") {
-            if (!validator.isEmail(value)) {
-                mess = "Email không đúng định dạng";
-            }
+        } else if (patternMismatch && name === "email") {
+            // if (!validator.isEmail(value)) {
+            //     mess = "Email không đúng định dạng";
+            // }
+            mess = "Email không đúng định dạng";
         } else if (name === "name") {
             const regexName = /^[a-zA-ZÀ-ỹ\s]+$/;
             if (!regexName.test(value)) {
@@ -78,19 +80,26 @@ const ProductFrom = () => {
                             break;
                         }
                     }
-                    if (isFlag) return;
+                    if (isFlag) {
+                        toast.error("xử lý thất bại");
+                        return;
+                    }
                     if (!svEdit) {
                         dispatch(BTFormActions.addSV(formValue));
                         setFormValue({});
                         setRender("");
+                        setValueSearch("");
+                        toast.success("Thêm sinh viên thành công");
                     } else {
                         dispatch(BTFormActions.updateSV(formValue));
                         setFormValue({});
                         setRender("");
+                        setValueSearch("");
+                        toast.success("Cập nhật sinh viên thành công");
                     }
                 }}
             >
-                <h2 className=" text-dark p-2 fs-2">
+                <h2 className="text-dark p-2 fs-2">
                     Thông Tin Sinh Viên
                 </h2>
                 <div className="row">
@@ -179,6 +188,7 @@ const ProductFrom = () => {
                             type="text"
                             required
                             title="email"
+                            pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
                             placeholder="Nhập Email"
                             className="form-control input1"
                             value={formValue?.email || ""}
@@ -203,15 +213,19 @@ const ProductFrom = () => {
                                 Thêm sinh viên
                             </button>
                         ) : (
-                            <button className="btn btn-outline-info mt-3 btnCheck" >
+                            <button className="btn btn-outline-secondary mt-3 btnCheck">
                                 Cập nhật sinh viên
                             </button>
                         )}{" "}
                         {svEdit ? (
-                            <button className="btn btn-outline-danger mt-3 btnCheck" onClick={()=>{
-                                dispatch(BTFormActions.deleteEdit())
-                                setFormValue("")
-                            }}>
+                            <button
+                                className="btn btn-outline-danger mt-3 btnCheck"
+                                onClick={() => {
+                                    dispatch(BTFormActions.deleteEdit());
+                                    setFormValue("");
+                                    setFormError("");
+                                }}
+                            >
                                 Huỷ cập nhật
                             </button>
                         ) : (
